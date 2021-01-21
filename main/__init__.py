@@ -9,11 +9,21 @@ import threadpool
 
 class __init__(unittest.TestCase):
     def setUp(self):
-        # self.driver = webdriver.Chrome(r"C:\Users\caihy\AppData\Local\Programs\Python\Python35\chromedriver.exe")
+        # 使用chromedriver
+        # self.driver = webdriver.Chrome()
+        # self.driver = webdriver.Chrome(r"C:\Users\caihy\AppData\Local\Programs\Python\Python35\chromedriver.exe") # Windows Path
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
 
-        # 若建立连接失败,可通过下载https://github.com/sveneisenschmidt/selenium-server-standalone/blob/master/bin/selenium-server-standalone.jar
+
+        # 使用HTMLunit
+        # 通过下载https://github.com/sveneisenschmidt/selenium-server-standalone/blob/master/bin/selenium-server-standalone.jar
         # 运行java -jar selenium-server-standalone.jar -port 4444启动服务后再运行
-        self.driver = webdriver.Remote(desired_capabilities=webdriver.DesiredCapabilities.HTMLUNIT)
+        # self.driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub',desired_capabilities=webdriver.DesiredCapabilities.HTMLUNIT)
+
+
         self.driver.implicitly_wait(30)
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -39,8 +49,12 @@ class __init__(unittest.TestCase):
         except WebDriverException:
             True
         try:
+            # aliyun的特征
             # driver.find_element_by_class_name("delegate-buy-bt")
+
+            # chinaz的特征
             driver.find_element_by_class_name("WhoisWrap")
+
             return True
         except NoSuchElementException:
             try:
@@ -54,22 +68,28 @@ class __init__(unittest.TestCase):
             print(url, (time.time() - start_time))
 
     @staticmethod
+    # 生成需要扫描的数字域名列表
     def get_url_list():
-        num_list = __init__.generate_num(5)
+        max_digit = 1 # 数字域名的最大位数
+        num_list = __init__.generate_num(max_digit)
         return __init__.get_url_string_list_from_num(num_list)
 
     @staticmethod
+    # 根据数字矩阵生成数字域名列表
     def get_url_string_list_from_num(num_list):
         url_string_list = []
         # format_string = "https://whois.aliyun.com/whois/domain/{0}.com"
         format_string = "http://whois.chinaz.com/{0}.com"
         for item in num_list:
+            #item为一维数字数组,把其序列化数字字符串
             join_num = "".join([str(x) for x in item])
+            #格式化成域名字符串
             format_url = format_string.format(join_num)
             url_string_list.append(format_url)
         return url_string_list
 
     @staticmethod
+    # 生成数字域名矩阵
     def generate_num(max_digit):
         num_list = []
         for index in range(0, max_digit):
@@ -80,11 +100,18 @@ class __init__(unittest.TestCase):
                     add_item = []
                     for x in range(0, max_digit):
                         add_item.append(0)
+                    # 把第一位改为对应数字
                     add_item[index] = i
+                    # 得出结果,例如:[[0,0,0,0,0],
+                    #              [1,0,0,0,0],
+                    #              [2,0,0,0,0],
+                    #              [3,0,0,0,0],
+                    #              [4,0,0,0,0],
+                    #              [5,0,0,0,0]]
                     num_list.append(add_item)
             # 若数组不为空,递归遍历
             else:
-                # 给指定数位赋值0-10的数字
+                # 给指定数位赋值0-9的数字,要深复制出各个数组
                 copy_num_list = copy.deepcopy(num_list)
                 for i in range(1, 10):
                     add_copy_num_list = copy.deepcopy(copy_num_list)
